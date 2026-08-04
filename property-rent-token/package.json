@@ -1,0 +1,18 @@
+{
+  "name": "property-rent-token",
+  "version": "1.0.0",
+  "description": "ERC-20 real estate tokenization contract with proportional rent distribution (reward-per-token pattern) and USDC payouts",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "coverage": "hardhat coverage"
+  },
+  "devDependencies": {
+    "hardhat": "^2.22.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0"
+  }
+}
