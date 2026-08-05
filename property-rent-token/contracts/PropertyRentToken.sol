@@ -94,17 +94,6 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     }
 
     /**
-     * @dev Calcula la recompensa pendiente de 'account' desde su última
-     * reclamación y actualiza su marcador de referencia.
-     * @param account Dirección del holder cuya recompensa se recalcula.
-     */
-    function _updateReward(address account) internal {
-        uint256 diff = rewardPerTokenStored - userRewardPerTokenPaid[account];
-        rewards[account] += (balanceOf(account) * diff) / 1e18;
-        userRewardPerTokenPaid[account] = rewardPerTokenStored;
-    }
-
-    /**
      * @dev Permite a un holder reclamar en USDC toda su renta pendiente
      * acumulada. Sigue el patrón Checks-Effects-Interactions para prevenir
      * ataques de reentrancy.
@@ -137,5 +126,16 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
         usdc.safeTransfer(feeCollector, fee);
 
         emit RentDeposited(netAmount);
+    }
+
+    /**
+     * @dev Calcula la recompensa pendiente de 'account' desde su última
+     * reclamación y actualiza su marcador de referencia.
+     * @param account Dirección del holder cuya recompensa se recalcula.
+     */
+    function _updateReward(address account) internal {
+        uint256 diff = rewardPerTokenStored - userRewardPerTokenPaid[account];
+        rewards[account] += (balanceOf(account) * diff) / 1e18;
+        userRewardPerTokenPaid[account] = rewardPerTokenStored;
     }
 }
