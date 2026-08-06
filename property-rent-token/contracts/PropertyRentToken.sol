@@ -20,16 +20,16 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     //@roles
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
 
-    //@constantes
+    //@constants
     uint256 public constant MAX_PRICE_PERCENT = 10; // 10%
     uint256 public constant NUM_TOKENS = 50_000;
     uint256 public constant FEE_PERCENT = 2; // 2% management fee
 
-    //@direcciones e integraciones externas
+    //@addresses and external integrations
     IERC20 public immutable usdc;
     address public immutable feeCollector;
 
-    //@variables de estado (mutables)
+    //@Mutable state variables
     uint256 public PROPERTY_VALUATION_EUR = 5_000_000;
     uint256 public PRICE_TOKEN = 100;
     uint256 public rewardPerTokenStored;
@@ -39,7 +39,7 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     mapping(address => uint256) public rewards;
     mapping(uint256 => bool) public checkPeriod;
 
-    //@eventos
+    //@events
     event PriceUpdate(uint256 oldPrice, uint256 newPrice, uint256 timestamp);
     event RentIncomeReported(uint256 amount);
     event RentDeposited(uint256 amount);
@@ -59,10 +59,10 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
         feeCollector = admin_;
     }
 
-    /**
-     * @dev Actualiza el precio de mercado del token, limitado por un circuit
-     * breaker de máximo MAX_PRICE_PERCENT de variación respecto al precio actual.
-     * @param newPrice Nuevo precio por token, en euros (sin escalar a 18 decimales).
+   /**
+     * @dev Updates the token's market price, limited by a circuit
+     * breaker of maximum MAX_PRICE_PERCENT variation relative to the current price.
+     * @param newPrice New price per token, in euros (unscaled to 18 decimals).
      */
     function updatePrice(uint256 newPrice) external onlyRole(ORACLE_ROLE) {
         uint256 maxDelta = (PRICE_TOKEN * MAX_PRICE_PERCENT) / 100;
@@ -78,10 +78,10 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     }
 
     /**
-     * @dev Registra el ingreso de renta de un periodo y actualiza el acumulador
-     * global de recompensas. Protegido contra reportes duplicados del mismo periodo.
-     * @param amount Importe de renta a repartir, ya escalado a 18 decimales.
-     * @param periodId Identificador único del periodo reportado (ej. mes/año).
+     * @dev Registers the rental income for a period and updates the global
+     * reward accumulator. Protected against duplicate reports for the same period.
+     * @param amount Rental amount to be distributed, already scaled to 18 decimals.
+     * @param periodId Unique identifier of the reported period (e.g., month/year).
      */
     function reportRentIncome(uint256 amount, uint256 periodId) external onlyRole(ORACLE_ROLE) {
         require(totalSupply() > 0, "no holders");
@@ -94,9 +94,9 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     }
 
     /**
-     * @dev Permite a un holder reclamar en USDC toda su renta pendiente
-     * acumulada. Sigue el patrón Checks-Effects-Interactions para prevenir
-     * ataques de reentrancy.
+     * @dev Allows a holder to claim all of their accrued pending rent in USDC.
+     * Follows the Checks-Effects-Interactions pattern to prevent
+     * reentrancy attacks.
      */
     function claimRent() external {
         _updateReward(msg.sender);
@@ -109,12 +109,11 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
         usdc.safeTransfer(msg.sender, amount);
     }
 
-    /**
-     * @dev Deposita USDC en el contrato para financiar el reparto de rentas,
-     * descontando automáticamente la comisión de gestión (FEE_PERCENT) hacia
-     * feeCollector. Requiere aprobación previa (usdc.approve) por parte de
-     * quien llama.
-     * @param amount Importe total en USDC a depositar, incluyendo la fee.
+   /**
+     * @dev Deposits USDC into the contract to fund the rent distribution,
+     * automatically deducting the management fee (FEE_PERCENT) towards
+     * feeCollector. Requires prior approval (usdc.approve) from the caller.
+     * @param amount Total amount in USDC to deposit, including the fee.
      */
     function depositRent(uint256 amount) external onlyRole(ORACLE_ROLE) {
         require(amount > 0, "invalid amount");
@@ -129,9 +128,9 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     }
 
     /**
-     * @dev Calcula la recompensa pendiente de 'account' desde su última
-     * reclamación y actualiza su marcador de referencia.
-     * @param account Dirección del holder cuya recompensa se recalcula.
+     * @dev Calculates the pending reward of 'account' since its last
+     * claim and updates its reference marker.
+     * @param account Address of the holder whose reward is being recalculated.
      */
     function _updateReward(address account) internal {
         uint256 diff = rewardPerTokenStored - userRewardPerTokenPaid[account];
