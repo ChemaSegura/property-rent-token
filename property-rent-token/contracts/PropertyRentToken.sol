@@ -64,17 +64,17 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
      * breaker of maximum MAX_PRICE_PERCENT variation relative to the current price.
      * @param newPrice New price per token, in euros (unscaled to 18 decimals).
      */
-    function updatePrice(uint256 newPrice) external onlyRole(ORACLE_ROLE) {
-        uint256 maxDelta = (PRICE_TOKEN * MAX_PRICE_PERCENT) / 100;
-        uint256 oldPrice = PRICE_TOKEN;
+    function updatePrice(uint256 newPrice_) external onlyRole(ORACLE_ROLE) {
+        uint256 maxDelta_ = (PRICE_TOKEN * MAX_PRICE_PERCENT) / 100;
+        uint256 oldPrice_ = PRICE_TOKEN;
 
-        require(newPrice > 0, "invalid price");
-        require(newPrice <= PRICE_TOKEN + maxDelta, "price increase exceeds max delta");
-        require(newPrice >= PRICE_TOKEN - maxDelta, "price decrease exceeds max delta");
+        require(newPrice_ > 0, "invalid price");
+        require(newPrice_ <= PRICE_TOKEN + maxDelta_, "price increase exceeds max delta");
+        require(newPrice_ >= PRICE_TOKEN - maxDelta_, "price decrease exceeds max delta");
 
-        PRICE_TOKEN = newPrice;
+        PRICE_TOKEN = newPrice_;
 
-        emit PriceUpdate(oldPrice, newPrice, block.timestamp);
+        emit PriceUpdate(oldPrice_, newPrice_, block.timestamp);
     }
 
     /**
@@ -83,14 +83,14 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
      * @param amount Rental amount to be distributed, already scaled to 18 decimals.
      * @param periodId Unique identifier of the reported period (e.g., month/year).
      */
-    function reportRentIncome(uint256 amount, uint256 periodId) external onlyRole(ORACLE_ROLE) {
+    function reportRentIncome(uint256 amount_, uint256 periodId_) external onlyRole(ORACLE_ROLE) {
         require(totalSupply() > 0, "no holders");
-        require(!checkPeriod[periodId], "period already reported");
+        require(!checkPeriod[periodId_], "period already reported");
 
-        checkPeriod[periodId] = true;
-        rewardPerTokenStored += (amount * 1e18) / totalSupply();
+        checkPeriod[periodId_] = true;
+        rewardPerTokenStored += (amount_ * 1e18) / totalSupply();
 
-        emit RentIncomeReported(amount);
+        emit RentIncomeReported(amount_);
     }
 
     /**
@@ -101,12 +101,12 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
     function claimRent() external {
         _updateReward(msg.sender);
 
-        uint256 amount = rewards[msg.sender];
-        require(amount > 0, "nothing to claim");
+        uint256 amount_ = rewards[msg.sender];
+        require(amount_ > 0, "nothing to claim");
 
         rewards[msg.sender] = 0;
 
-        usdc.safeTransfer(msg.sender, amount);
+        usdc.safeTransfer(msg.sender, amount_);
     }
 
    /**
@@ -115,16 +115,16 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
      * feeCollector. Requires prior approval (usdc.approve) from the caller.
      * @param amount Total amount in USDC to deposit, including the fee.
      */
-    function depositRent(uint256 amount) external onlyRole(ORACLE_ROLE) {
-        require(amount > 0, "invalid amount");
+    function depositRent(uint256 amount_) external onlyRole(ORACLE_ROLE) {
+        require(amount_ > 0, "invalid amount");
 
-        uint256 fee = (amount * FEE_PERCENT) / 100;
-        uint256 netAmount = amount - fee;
+        uint256 fee_ = (amount_ * FEE_PERCENT) / 100;
+        uint256 netAmount_ = amount_ - fee_;
 
-        usdc.transferFrom(msg.sender, address(this), amount);
-        usdc.safeTransfer(feeCollector, fee);
+        usdc.transferFrom(msg.sender, address(this), amount_);
+        usdc.safeTransfer(feeCollector, fee_);
 
-        emit RentDeposited(netAmount);
+        emit RentDeposited(netAmount_);
     }
 
     /**
@@ -132,9 +132,9 @@ contract PropertyRentToken is ERC20, AccessControl, Pausable {
      * claim and updates its reference marker.
      * @param account Address of the holder whose reward is being recalculated.
      */
-    function _updateReward(address account) internal {
-        uint256 diff = rewardPerTokenStored - userRewardPerTokenPaid[account];
-        rewards[account] += (balanceOf(account) * diff) / 1e18;
-        userRewardPerTokenPaid[account] = rewardPerTokenStored;
+    function _updateReward(address account_) internal {
+        uint256 diff_ = rewardPerTokenStored - userRewardPerTokenPaid[account_];
+        rewards[account_] += (balanceOf(account_) * diff_) / 1e18;
+        userRewardPerTokenPaid[account_] = rewardPerTokenStored;
     }
 }
